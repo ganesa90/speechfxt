@@ -13,13 +13,22 @@ import os
 import librosa
 import pickle
 import ConfigParser as cp
+from writehtk import writehtk
+from gammatone import gtgram
+
+class Error(Exception):
+   """Base class for other exceptions"""
+   pass
+
+class ConfigError(Error):
+   """Raised when a config setting is not found"""
+   pass
 
 
-
-def mvnormalize(feats, mvn_params):
+def mvnormalize(feats, mvn_params, std_frac):
     f_mean = mvn_params[:,0, None]
     f_std = mvn_params[:,1, None]
-    feats_norm = (feats - f_mean)/f_std
+    feats_norm = std_frac*(feats - f_mean)/f_std
     return feats_norm
 
 def check_files(filelist):
@@ -28,9 +37,9 @@ def check_files(filelist):
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
         opfnm = fline.split(',')[1]
-        if  not(os.path.isfile(opfnm+'.npy')):
+        if  not(os.path.isfile(opfnm)):
             print('Error: Feature file '+opfnm+' not created')
-        if not(os.path.getsize(opfnm+'.npy') > 0):
+        if not(os.path.getsize(opfnm) > 0):
             print('Error: Feature file '+opfnm+' is empty')
 
 def mfcc_wrapper(y, sr, win_length, hop_length, window, n_mfcc=13, n_mels=40, 
@@ -73,6 +82,11 @@ def get_mfcc(filelist, config):
     ncoef = int(config['ncoef'])
     mvn = config['mvn']
     mvn = mvn.upper() == 'TRUE'
+    if 'std_frac' in config:
+        std_frac = float(config['std_frac'])
+    else:
+        std_frac = 1.0
+            
     # Iterate over the filelist to extract features
     if mvn:
         print ("Computing the mean and variance of features")
@@ -110,8 +124,8 @@ def get_mfcc(filelist, config):
         hop_length=hop_length, win_length=win_length,
         center=True, window=winfun(win_length))
         if mvn:
-            feats = mvnormalize(feats, mvn_params)
-        np.save(opfnm, feats)
+            feats = mvnormalize(feats, mvn_params, std_frac)
+        writehtk(feats.T, frameshift, opfnm)
     fp.close()
     
 def get_melspect(filelist, config):
@@ -133,6 +147,10 @@ def get_melspect(filelist, config):
         winfun = getattr(np, wintype)    
     mvn = config['mvn']
     mvn = mvn.upper() == 'TRUE'
+    if 'std_frac' in config:
+        std_frac = float(config['std_frac'])
+    else:
+        std_frac = 1.0
     # Iterate over the filelist to extract features
     if mvn:
         feats_list = []
@@ -169,8 +187,8 @@ def get_melspect(filelist, config):
         hop_length=hop_length, win_length=win_length,
         center=True, window=winfun(win_length))
         if mvn:
-            feats = mvnormalize(feats, mvn_params)
-        np.save(opfnm, feats)
+            feats = mvnormalize(feats, mvn_params, std_frac)
+        writehtk(feats.T, frameshift, opfnm)
     fp.close()
     
 def get_powerspect(filelist, config):
@@ -191,6 +209,10 @@ def get_powerspect(filelist, config):
         winfun = getattr(np, wintype)    
     mvn = config['mvn']
     mvn = mvn.upper() == 'TRUE'
+    if 'std_frac' in config:
+        std_frac = float(config['std_frac'])
+    else:
+        std_frac = 1.0
     # Iterate over the filelist to extract features
     if mvn:
         feats_list = []
@@ -248,10 +270,138 @@ def get_powerspect(filelist, config):
                 print('NaN Error in root compression for file: %s' %infnm)
                 exit()
         if mvn:
-            feats = mvnormalize(feats, mvn_params)
-        np.save(opfnm, feats)
+            feats = mvnormalize(feats, mvn_params, std_frac)
+        writehtk(feats.T, frameshift, opfnm)
     fp.close()
+
+def get_waveform(filelist, config):
+    # Read the filelist
+    fp = open(filelist,'r')
+    flist = fp.read().splitlines()
+    # Create output directory if non-existant
+    opdir = os.path.dirname(flist[0].split(',')[1])
+    if not os.path.exists(opdir):
+        os.makedirs(opdir)
+    # Read the relevant configs from the configfile    
+    framelen = float(config['framelen'])
+    frameshift = float(config['frameshift'])    
+    wintype = config['wintype']    
+    if wintype == 'rectangular':
+        winfun = np.ones
+    else:
+        winfun = getattr(np, wintype)    
+    mvn = config['mvn']
+    mvn = mvn.upper() == 'TRUE'
+    if 'std_frac' in config:
+        std_frac = float(config['std_frac'])
+    else:
+        std_frac = 1.0
+    # Iterate over the filelist to extract features        
+    for iter1,fline in enumerate(flist):
+        infnm = fline.split(',')[0]
+        opfnm = fline.split(',')[1]
+        sig, fs = librosa.load(infnm, sr=None)
+        sig = sig/max(abs(sig))
+        dither = 1e-6*np.random.rand(sig.shape[0])
+        sig = sig + dither
+        win_length=int(fs*framelen*0.001)
+        hop_length = int(fs*frameshift*0.001)
+        feats = librosa.util.frame(y, frame_length=win_length, hop_length=hop_length)
+        # Code for amplitude range compression
+        if mvn:
+            frame_mean = np.mean(feats, axis=0)[None, :]
+            frame_std = np.std(feats, axis=0)[None, :]
+            feats = std_frac*(feats - frame_mean)/frame_std   
+        writehtk(feats.T, frameshift, opfnm)
+    fp.close()
+
+def get_gfb(filelist, config):
+    # Read the filelist
+    fp = open(filelist,'r')
+    flist = fp.read().splitlines()
+    # Create output directory if non-existant
+    opdir = os.path.dirname(flist[0].split(',')[1])
+    if not os.path.exists(opdir):
+        os.makedirs(opdir)
+    # Read the relevant configs from the configfile    
+    framelen = float(config['framelen'])
+    frameshift = float(config['frameshift'])    
+    wintype = config['wintype']    
+    if wintype == 'rectangular':
+        winfun = np.ones
+    else:
+        winfun = getattr(np, wintype)
+    # Number of channels for gammatone filterbank
+    if 'nbanks' in config:
+        nbanks = int(config['nbanks'])
+    else:
+        raise ConfigError('nbanks parameter not set in config file')
+    # Min frequency of Gammatone filterbank
+    if 'min_freq' in config:
+        min_freq = float(config['min_freq'])
+    else:
+        min_freq = 0            
+    mvn = config['mvn']
+    mvn = mvn.upper() == 'TRUE'
+    if 'std_frac' in config:
+        std_frac = float(config['std_frac'])
+    else:
+        std_frac = 1.0
+    # Iterate over the filelist to extract features
+    if mvn:
+        feats_list = []
+        for iter1,fline in enumerate(flist):
+            infnm = fline.split(',')[0]
+            opfnm = fline.split(',')[1]
+            sig, fs = librosa.load(infnm, sr=None)
+            sig = sig/max(abs(sig))
+            dither = 1e-6*np.random.rand(sig.shape[0])
+            sig = sig + dither
+            win_length=int(fs*framelen*0.001)
+            hop_length = int(fs*frameshift*0.001)
+            feats = gtgram.gtgram(sig, fs, framelen*0.001, frameshift*0.001, 
+                                  nbanks, min_freq)            
+            # Code for amplitude range compression
+            if config['compression'] == 'log':
+                feats = librosa.logamplitude(feats)
+            elif config['compression'][0:4] == 'root':
+                rootval = float(config['compression'].split('_')[1])                
+                feats = np.real(feats**(1/rootval))                
+                if np.sum(np.isnan(feats)):
+                    print('NaN Error in root compression for file: %s' %infnm)
+                    exit()
+            feats_list.append(feats)
+        all_feats = np.concatenate(feats_list, axis=1)
+        f_mean = np.mean(all_feats, axis=1)[:, None]
+        f_std = np.std(all_feats, axis=1)[:, None]
+        opdir = os.path.dirname(opfnm)
+        mvn_params = np.concatenate((f_mean, f_std), axis=1)
+        np.save(opdir+'/mvn_params_'+filelist, mvn_params)     
         
+    for iter1,fline in enumerate(flist):
+        infnm = fline.split(',')[0]
+        opfnm = fline.split(',')[1]
+        sig, fs = librosa.load(infnm, sr=None)
+        sig = sig/max(abs(sig))
+        dither = 1e-6*np.random.rand(sig.shape[0])
+        sig = sig + dither
+        win_length=int(fs*framelen*0.001)
+        hop_length = int(fs*frameshift*0.001)
+        feats = gtgram.gtgram(sig, fs, framelen*0.001, frameshift*0.001, 
+                                  nbanks, min_freq)        
+        if config['compression'] == 'log':
+                feats = librosa.logamplitude(feats)
+        elif config['compression'][0:4] == 'root':
+            rootval = float(config['compression'].split('_')[1])                
+            feats = np.real(feats**(1/rootval))                
+            if np.sum(np.isnan(feats)):
+                print('NaN Error in root compression for file: %s' %infnm)
+                exit()
+        if mvn:
+            feats = mvnormalize(feats, mvn_params, std_frac)
+        writehtk(feats.T, frameshift, opfnm)
+    fp.close()
+
     
 def extractFeatures(filelist, configfile):
     configfp = cp.RawConfigParser()
@@ -261,7 +411,8 @@ def extractFeatures(filelist, configfile):
     config_dict = dict(configfp.items(sect))
     ftype = config_dict['feature']
     featExt_opt = {'mfcc': get_mfcc, 'melspect': get_melspect, 
-                   'powerspect': get_powerspect}
+                   'powerspect': get_powerspect, 'waveform': get_waveform,
+                   'gfb': get_gfb}
     print('Extracting features')
     featExt_opt[ftype](filelist, config_dict)
     print('Checking the feature files')
