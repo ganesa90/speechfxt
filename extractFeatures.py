@@ -5,6 +5,7 @@ Created on Sat Nov  5 23:20:41 2016
 @author: ganesh
 """
 
+import sys
 import numpy as np
 import scipy
 import scipy.io
@@ -419,6 +420,7 @@ def extractFeatures(filelist, configfile):
     check_files(filelist)
 
 if __name__=="__main__":
-    extractFeatures('test_flist_featExt.txt', 'example_config.conf')
+#    extractFeatures('test_flist_featExt.txt', 'example_config.conf')
+    extractFeatures(sys.argv[1], sys.argv[2])
     
     
