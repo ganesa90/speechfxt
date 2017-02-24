@@ -236,7 +236,7 @@ def get_powerspect(filelist, config):
                 feats = librosa.logamplitude(feats)
             elif config['compression'][0:4] == 'root':
                 rootval = float(config['compression'].split('_')[1])                
-                feats = np.real(feats**(1/rootval))                
+                feats = np.sign(feats)*(np.abs(feats)**(1/rootval))
                 if np.sum(np.isnan(feats)):
                     print('NaN Error in root compression for file: %s' %infnm)
                     exit()
@@ -266,7 +266,7 @@ def get_powerspect(filelist, config):
                 feats = librosa.logamplitude(feats)
         elif config['compression'][0:4] == 'root':
             rootval = float(config['compression'].split('_')[1])                
-            feats = np.real(feats**(1/rootval))                
+            feats = np.sign(feats)*(np.abs(feats)**(1/rootval))
             if np.sum(np.isnan(feats)):
                 print('NaN Error in root compression for file: %s' %infnm)
                 exit()
@@ -367,7 +367,7 @@ def get_gfb(filelist, config):
                 feats = librosa.logamplitude(feats)
             elif config['compression'][0:4] == 'root':
                 rootval = float(config['compression'].split('_')[1])                
-                feats = np.real(feats**(1/rootval))                
+                feats = np.sign(feats)*(np.abs(feats)**(1/rootval))
                 if np.sum(np.isnan(feats)):
                     print('NaN Error in root compression for file: %s' %infnm)
                     exit()
@@ -394,7 +394,7 @@ def get_gfb(filelist, config):
                 feats = librosa.logamplitude(feats)
         elif config['compression'][0:4] == 'root':
             rootval = float(config['compression'].split('_')[1])                
-            feats = np.real(feats**(1/rootval))                
+            feats = np.sign(feats)*(np.abs(feats)**(1/rootval))
             if np.sum(np.isnan(feats)):
                 print('NaN Error in root compression for file: %s' %infnm)
                 exit()
