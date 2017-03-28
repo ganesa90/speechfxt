@@ -110,7 +110,8 @@ def get_mfcc(filelist, config):
         f_std = np.std(all_feats, axis=1)[:, None]
         opdir = os.path.dirname(opfnm)
         mvn_params = np.concatenate((f_mean, f_std), axis=1)
-        np.save(opdir+'/mvn_params_'+filelist, mvn_params)     
+        postfix = os.path.basename(filelist).split('.')[0]
+        np.save(opdir+'/mvn_params_'+postfix+'.npy', mvn_params)     
         
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
@@ -173,7 +174,9 @@ def get_melspect(filelist, config):
         f_std = np.std(all_feats, axis=1)[:, None]
         opdir = os.path.dirname(opfnm)
         mvn_params = np.concatenate((f_mean, f_std), axis=1)
-        np.save(opdir+'/mvn_params_'+filelist, mvn_params)     
+        postfix = os.path.basename(filelist).split('.')[0]
+        np.save(opdir+'/mvn_params_'+postfix+'.npy', mvn_params)    
+
         
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
@@ -246,7 +249,9 @@ def get_powerspect(filelist, config):
         f_std = np.std(all_feats, axis=1)[:, None]
         opdir = os.path.dirname(opfnm)
         mvn_params = np.concatenate((f_mean, f_std), axis=1)
-        np.save(opdir+'/mvn_params_'+filelist, mvn_params)     
+        postfix = os.path.basename(filelist).split('.')[0]
+        np.save(opdir+'/mvn_params_'+postfix+'.npy', mvn_params)    
+
         
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
@@ -377,7 +382,9 @@ def get_gfb(filelist, config):
         f_std = np.std(all_feats, axis=1)[:, None]
         opdir = os.path.dirname(opfnm)
         mvn_params = np.concatenate((f_mean, f_std), axis=1)
-        np.save(opdir+'/mvn_params_'+filelist, mvn_params)     
+        postfix = os.path.basename(filelist).split('.')[0]
+        np.save(opdir+'/mvn_params_'+postfix+'.npy', mvn_params)    
+
         
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
