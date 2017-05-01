@@ -35,6 +35,7 @@ def mvnormalize(feats, mvn_params, std_frac):
 def check_files(filelist):
     fp = open(filelist,'r')
     flist = fp.read().splitlines()    
+    flist = filter(None, flist)
     for iter1,fline in enumerate(flist):
         infnm = fline.split(',')[0]
         opfnm = fline.split(',')[1]
@@ -67,6 +68,7 @@ def get_mfcc(filelist, config):
     # Read the filelist
     fp = open(filelist,'r')
     flist = fp.read().splitlines()
+    flist = filter(None, flist)
     # Create output directory if non-existant
     opdir = os.path.dirname(flist[0].split(',')[1])
     if not os.path.exists(opdir):
@@ -95,7 +97,7 @@ def get_mfcc(filelist, config):
         for iter1,fline in enumerate(flist):
             infnm = fline.split(',')[0]
             opfnm = fline.split(',')[1]
-            sig, fs = librosa.load(infnm)
+            sig, fs = librosa.load(infnm, sr=None)
             sig = sig/max(abs(sig))
             dither = 1e-6*np.random.rand(sig.shape[0])
             sig = sig + dither
@@ -134,6 +136,7 @@ def get_melspect(filelist, config):
     # Read the filelist
     fp = open(filelist,'r')
     flist = fp.read().splitlines()
+    flist = filter(None, flist)
     # Create output directory if non-existant
     opdir = os.path.dirname(flist[0].split(',')[1])
     if not os.path.exists(opdir):
@@ -199,6 +202,7 @@ def get_powerspect(filelist, config):
     # Read the filelist
     fp = open(filelist,'r')
     flist = fp.read().splitlines()
+    flist = filter(None, flist)
     # Create output directory if non-existant
     opdir = os.path.dirname(flist[0].split(',')[1])
     if not os.path.exists(opdir):
@@ -284,6 +288,7 @@ def get_waveform(filelist, config):
     # Read the filelist
     fp = open(filelist,'r')
     flist = fp.read().splitlines()
+    flist = filter(None, flist)
     # Create output directory if non-existant
     opdir = os.path.dirname(flist[0].split(',')[1])
     if not os.path.exists(opdir):
@@ -325,6 +330,7 @@ def get_gfb(filelist, config):
     # Read the filelist
     fp = open(filelist,'r')
     flist = fp.read().splitlines()
+    flist = filter(None, flist)
     # Create output directory if non-existant
     opdir = os.path.dirname(flist[0].split(',')[1])
     if not os.path.exists(opdir):
