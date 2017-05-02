@@ -45,9 +45,11 @@ def check_files(filelist):
             print('Error: Feature file '+opfnm+' is empty')
 
 def mfcc_wrapper(y, sr, win_length, hop_length, window, n_mfcc=13, n_mels=40, 
-                 n_fft = 512, center=True):
+                 n_fft = None, center=True):
+    if n_fft is None:
+        n_fft = int(2**(np.ceil*(np.log(win_length)/np.log(2))))
     stft = librosa.core.stft(y=y, win_length=win_length, window=window,
-                             hop_length=hop_length, center=center, n_fft=win_length)
+                             hop_length=hop_length, center=center, n_fft=n_fft)
     powspec = np.abs(stft)**2
     melspec = librosa.feature.melspectrogram(S=powspec, hop_length=hop_length,
                                              n_fft=n_fft, n_mels=n_mels)
@@ -55,9 +57,11 @@ def mfcc_wrapper(y, sr, win_length, hop_length, window, n_mfcc=13, n_mels=40,
     return np.real(mfcc)
 
 def melspect_wrapper(y, sr, win_length, hop_length, window, n_mfcc=13, n_mels=40, 
-                 n_fft = 512, center=True):
+                 n_fft = None, center=True):
+    if n_fft is None:
+        n_fft = int(2**(np.ceil*(np.log(win_length)/np.log(2))))
     stft = librosa.core.stft(y=y, win_length=win_length, window=window,
-                             hop_length=hop_length, center=center, n_fft=win_length)
+                             hop_length=hop_length, center=center, n_fft=n_fft)
     powspec = np.abs(stft)**2
     melspec = librosa.feature.melspectrogram(S=powspec, hop_length=hop_length,
                                              n_fft=n_fft, n_mels=n_mels)    
@@ -236,7 +240,7 @@ def get_powerspect(filelist, config):
             stft = librosa.core.stft(y=sig, win_length=win_length, 
                                      window=winfun(win_length),
                                      hop_length=hop_length, center=True, 
-                                     n_fft=win_length)
+                                     n_fft=None)
             feats = np.abs(stft)**2
             # Code for amplitude range compression
             if config['compression'] == 'log':
@@ -269,7 +273,7 @@ def get_powerspect(filelist, config):
         stft = librosa.core.stft(y=sig, win_length=win_length, 
                                      window=winfun(win_length),
                                      hop_length=hop_length, center=True, 
-                                     n_fft=win_length)
+                                     n_fft=None)
         feats = np.abs(stft)**2
         if config['compression'] == 'log':
                 feats = librosa.logamplitude(feats)
