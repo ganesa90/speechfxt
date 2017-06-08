@@ -13,7 +13,7 @@ Running the code:
 python extractFeatures.py <job_filelist> <config_file>
 
 Example:
-python extractFeatures.py example_flist_featExt.txt example_config.conf
+python extractFeatures.py example_flist.txt example_config.conf
 
 ###############
 Output format
