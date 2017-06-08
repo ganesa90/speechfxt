@@ -12,6 +12,9 @@ config file - Look at the example_config.conf for the sample config file
 Running the code:
 python extractFeatures.py <job_filelist> <config_file>
 
+Example:
+python extractFeatures.py example_flist_featExt.txt example_config.conf
+
 ###############
 Output format
 The extracted features are saved in the HTK format.

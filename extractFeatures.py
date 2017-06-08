@@ -47,7 +47,7 @@ def check_files(filelist):
 def mfcc_wrapper(y, sr, win_length, hop_length, window, n_mfcc=13, n_mels=40, 
                  n_fft = None, center=True):
     if n_fft is None:
-        n_fft = int(2**(np.ceil*(np.log(win_length)/np.log(2))))
+        n_fft = int(2**(np.ceil(np.log(win_length)/np.log(2))))
     stft = librosa.core.stft(y=y, win_length=win_length, window=window,
                              hop_length=hop_length, center=center, n_fft=n_fft)
     powspec = np.abs(stft)**2
