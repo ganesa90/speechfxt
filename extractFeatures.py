@@ -93,6 +93,11 @@ def get_mfcc(filelist, config):
         std_frac = float(config['std_frac'])
     else:
         std_frac = 1.0
+    
+    del1_flag = config['delta1']
+    del2_flag = config['delta2']
+    del1_flag = del1_flag.upper() == 'TRUE'
+    del2_flag = del2_flag.upper() == 'TRUE'
             
     # Iterate over the filelist to extract features
     if mvn:
@@ -110,6 +115,14 @@ def get_mfcc(filelist, config):
             feats = mfcc_wrapper(y=sig, sr=fs, n_mfcc=ncoef, 
             win_length=win_length, n_mels=n_mels, hop_length=hop_length,
             center=True, window=winfun(win_length))
+            if del1_flag:
+                feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+            if del2_flag:
+                feats_del2 = librosa.feature.delta(feats, order=2, axis=1)                
+            if del1_flag:                
+                feats = np.concatenate((feats,feats_del1), axis=0)
+            if del2_flag:                
+                feats = np.concatenate((feats,feats_del2), axis=0)
             feats_list.append(feats)
         all_feats = np.concatenate(feats_list, axis=1)
         f_mean = np.mean(all_feats, axis=1)[:, None]
@@ -131,6 +144,14 @@ def get_mfcc(filelist, config):
         feats = mfcc_wrapper(y=sig, sr=fs, n_mfcc=ncoef, n_mels=n_mels,
         hop_length=hop_length, win_length=win_length,
         center=True, window=winfun(win_length))
+        if del1_flag:
+            feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+        if del2_flag:
+            feats_del2 = librosa.feature.delta(feats, order=2, axis=1)            
+        if del1_flag:            
+            feats = np.concatenate((feats,feats_del1), axis=0)
+        if del2_flag:            
+            feats = np.concatenate((feats,feats_del2), axis=0)
         if mvn:
             feats = mvnormalize(feats, mvn_params, std_frac)
         writehtk(feats.T, frameshift, opfnm)
@@ -160,6 +181,11 @@ def get_melspect(filelist, config):
         std_frac = float(config['std_frac'])
     else:
         std_frac = 1.0
+    
+    del1_flag = config['delta1']
+    del2_flag = config['delta2']
+    del1_flag = del1_flag.upper() == 'TRUE'
+    del2_flag = del2_flag.upper() == 'TRUE'
     # Iterate over the filelist to extract features
     if mvn:
         feats_list = []
@@ -175,6 +201,14 @@ def get_melspect(filelist, config):
             feats = melspect_wrapper(y=sig, sr=fs,
             win_length=win_length, n_mels=n_mels, hop_length=hop_length,
             center=True, window=winfun(win_length))
+            if del1_flag:
+                feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+            if del2_flag:
+                feats_del2 = librosa.feature.delta(feats, order=2, axis=1)                
+            if del1_flag:                
+                feats = np.concatenate((feats,feats_del1), axis=0)
+            if del2_flag:                
+                feats = np.concatenate((feats,feats_del2), axis=0)                
             feats_list.append(feats)
         all_feats = np.concatenate(feats_list, axis=1)
         f_mean = np.mean(all_feats, axis=1)[:, None]
@@ -197,6 +231,14 @@ def get_melspect(filelist, config):
         feats = melspect_wrapper(y=sig, sr=fs, n_mels=n_mels,
         hop_length=hop_length, win_length=win_length,
         center=True, window=winfun(win_length))
+        if del1_flag:
+            feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+        if del2_flag:
+            feats_del2 = librosa.feature.delta(feats, order=2, axis=1)            
+        if del1_flag:            
+            feats = np.concatenate((feats,feats_del1), axis=0)
+        if del2_flag:            
+            feats = np.concatenate((feats,feats_del2), axis=0)
         if mvn:
             feats = mvnormalize(feats, mvn_params, std_frac)
         writehtk(feats.T, frameshift, opfnm)
@@ -225,6 +267,11 @@ def get_powerspect(filelist, config):
         std_frac = float(config['std_frac'])
     else:
         std_frac = 1.0
+        
+    del1_flag = config['delta1']
+    del2_flag = config['delta2']
+    del1_flag = del1_flag.upper() == 'TRUE'
+    del2_flag = del2_flag.upper() == 'TRUE'
     # Iterate over the filelist to extract features
     if mvn:
         feats_list = []
@@ -251,6 +298,14 @@ def get_powerspect(filelist, config):
                 if np.sum(np.isnan(feats)):
                     print('NaN Error in root compression for file: %s' %infnm)
                     exit()
+            if del1_flag:
+                feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+            if del2_flag:
+                feats_del2 = librosa.feature.delta(feats, order=2, axis=1)                
+            if del1_flag:                
+                feats = np.concatenate((feats,feats_del1), axis=0)
+            if del2_flag:                
+                feats = np.concatenate((feats,feats_del2), axis=0) 
             feats_list.append(feats)
         all_feats = np.concatenate(feats_list, axis=1)
         f_mean = np.mean(all_feats, axis=1)[:, None]
@@ -283,6 +338,14 @@ def get_powerspect(filelist, config):
             if np.sum(np.isnan(feats)):
                 print('NaN Error in root compression for file: %s' %infnm)
                 exit()
+        if del1_flag:
+            feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+        if del2_flag:
+            feats_del2 = librosa.feature.delta(feats, order=2, axis=1)            
+        if del1_flag:            
+            feats = np.concatenate((feats,feats_del1), axis=0)
+        if del2_flag:            
+            feats = np.concatenate((feats,feats_del2), axis=0)
         if mvn:
             feats = mvnormalize(feats, mvn_params, std_frac)
         writehtk(feats.T, frameshift, opfnm)
@@ -363,6 +426,10 @@ def get_gfb(filelist, config):
         std_frac = float(config['std_frac'])
     else:
         std_frac = 1.0
+    del1_flag = config['delta1']
+    del2_flag = config['delta2']
+    del1_flag = del1_flag.upper() == 'TRUE'
+    del2_flag = del2_flag.upper() == 'TRUE'
     # Iterate over the filelist to extract features
     if mvn:
         feats_list = []
@@ -386,6 +453,15 @@ def get_gfb(filelist, config):
                 if np.sum(np.isnan(feats)):
                     print('NaN Error in root compression for file: %s' %infnm)
                     exit()
+            if del1_flag:
+                feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+            if del2_flag:
+                feats_del2 = librosa.feature.delta(feats, order=2, axis=1)                
+            if del1_flag:                
+                feats = np.concatenate((feats,feats_del1), axis=0)
+            if del2_flag:                
+                feats = np.concatenate((feats,feats_del2), axis=0) 
+                
             feats_list.append(feats)
         all_feats = np.concatenate(feats_list, axis=1)
         f_mean = np.mean(all_feats, axis=1)[:, None]
@@ -415,6 +491,14 @@ def get_gfb(filelist, config):
             if np.sum(np.isnan(feats)):
                 print('NaN Error in root compression for file: %s' %infnm)
                 exit()
+        if del1_flag:
+            feats_del1 = librosa.feature.delta(feats, order=1, axis=1)
+        if del2_flag:
+            feats_del2 = librosa.feature.delta(feats, order=2, axis=1)            
+        if del1_flag:            
+            feats = np.concatenate((feats,feats_del1), axis=0)
+        if del2_flag:            
+            feats = np.concatenate((feats,feats_del2), axis=0)
         if mvn:
             feats = mvnormalize(feats, mvn_params, std_frac)
         writehtk(feats.T, frameshift, opfnm)

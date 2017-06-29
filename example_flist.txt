@@ -1,1 +1,1 @@
-./test.wav,./mfcc/test_gfb.htk
+./test.wav,./mfcc/test_mfcc.htk
